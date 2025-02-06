@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resultado da Decodificação</title>
+    <style>
+        .section {
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            margin-bottom: 10px;
+        }
+        .section pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap; /* Preserva a formatação do texto */
+            word-wrap: break-word; /* Quebra linhas longas */
+        }
+    </style>
+</head>
+<body>
+    <h1>Resultado da Decodificação</h1>
+
+    <!-- Seção do Subject -->
+    <div class="section">
+        <h2>Subject</h2>
+        <pre>
+{% for key, value in csr_details.subject.items %}
+{{ key }}: {{ value }}
+{% endfor %}
+        </pre>
+    </div>
+
+    <!-- Seção da Chave Pública -->
+    <div class="section">
+        <h2>Chave Pública</h2>
+        <pre>{{ csr_details.public_key }}</pre>
+    </div>
+
+    <!-- Seção das Extensões -->
+    <div class="section">
+        <h2>Extensões</h2>
+        <ul>
+            {% for ext in csr_details.extensions %}
+                <li><strong>{{ ext.name }}:</strong> {{ ext.value }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Seção do Conteúdo Completo da CSR -->
+    <div class="section">
+        <h2>Conteúdo Completo da CSR</h2>
+        <pre>{{ csr_details.csr_content }}</pre>
+    </div>
+
+    <a href="{% url 'csr_decoder' %}">Voltar</a>
+</body>
+</html>

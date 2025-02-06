@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSR Decoder</title>
+</head>
+<body>
+    <h1>CSR Decoder</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+        <label for="csr_text">Cole sua CSR abaixo:</label><br>
+        <textarea name="csr_text" id="csr_text" rows="10" cols="80" required></textarea><br>
+        <button type="submit">Decodificar CSR</button>
+    </form>
+
+    {% if csr_data %}
+        <h2>Informações Decodificadas da CSR</h2>
+        <ul>
+            {% for key, value in csr_data.items %}
+                <li><strong>{{ key }}:</strong> {{ value }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+</body>
+</html>

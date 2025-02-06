@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página Inicial</title>
+    <!-- Carrega o arquivo CSS -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'home/css/styles.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Bem-vindo ao nosso site!</h1>
+        <p>Por favor, faça login para continuar.</p>
+
+        <!-- Formulário de login -->
+        <form method="post">
+            {% csrf_token %}
+            <label for="username">Usuário:</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="password">Senha:</label>
+            <input type="password" id="password" name="password" required>
+
+            <button type="submit">Entrar</button>
+        </form>
+
+        <!-- Mensagens de erro -->
+        {% if messages %}
+            <div class="messages">
+                <ul>
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <!-- Link para cadastro -->
+        <p>Não tem uma conta? <a href="{% url 'signup' %}">Cadastre-se</a></p>
+    </div>
+</body>
+</html>

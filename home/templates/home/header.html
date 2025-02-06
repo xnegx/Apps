@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decodificador de CSR</title>
+</head>
+<body>
+    <h1>Visualizador de Header</h1>
+
+    <!-- Formulário de upload de arquivo binário e certificados -->
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="binary_file">Envie o arquivo binário:</label>
+        <input type="file" name="binary_file" accept="*/*" required><br><br>
+
+        <label for="cert_origin">Envie o certificado de origem (opcional):</label>
+        <input type="file" name="cert_origin" accept=".pem, .der, .cer"><br><br>
+
+        <label for="cert_destination">Envie o certificado de destino (opcional):</label>
+        <input type="file" name="cert_destination" accept=".pem, .der, .cer"><br><br>
+
+        <button type="submit">Enviar</button>
+    </form>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    {% if parsed_data %}
+        <h2>Informações do Cabeçalho Decodificado:</h2>
+        <ul>
+            {% for field, value in parsed_data.items %}
+                <li><strong>{{ field }}:</strong> {{ value }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if cert_verification %}
+        <h2>Resultado da Comparação dos Certificados</h2>
+        <ul>
+            <li><strong>Certificado de Origem do Arquivo:</strong>
+                {% if cert_verification.certificado_origem %}
+                    ✅
+                {% else %}
+                    ❌
+                {% endif %}
+            </li>
+
+            <li><strong>Certificado de Destino do Arquivo:</strong>
+                {% if cert_verification.certificado_destino %}
+                    ✅
+                {% else %}
+                    ❌
+                {% endif %}
+            </li>
+
+            <li><strong>Emissor de Origem:</strong> {{ cert_verification.emissor_origem }}</li>
+            <li><strong>Emissor de Destino:</strong> {{ cert_verification.emissor_destino }}</li>
+            <li><strong>Série do Certificado de Origem:</strong> {{ cert_verification.serie_origem }}</li>
+            <li><strong>Série do Certificado de Destino:</strong> {{ cert_verification.serie_destino }}</li>
+        </ul>
+    {% endif %}
+</body>
+</html>

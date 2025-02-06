@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro</title>
+    <!-- Carrega o arquivo CSS -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'home/css/styles.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Cadastro</h1>
+
+        <!-- Exibir mensagens de sucesso ou erro -->
+        {% if messages %}
+            <div class="messages">
+                <ul>
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Exibir erros não relacionados a campos específicos -->
+            {% if form.non_field_errors %}
+                <div class="error-messages">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Campos padrão do Django (usuário e senha) -->
+            <p>
+                <label for="id_username">Usuário:</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <div class="error-messages">
+                        {% for error in form.username.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </p>
+            <p>
+                <label for="id_password1">Senha:</label>
+                {{ form.password1 }}
+                {% if form.password1.errors %}
+                    <div class="error-messages">
+                        {% for error in form.password1.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </p>
+            <p>
+                <label for="id_password2">Confirmação de senha:</label>
+                {{ form.password2 }}
+                {% if form.password2.errors %}
+                    <div class="error-messages">
+                        {% for error in form.password2.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </p>
+
+            <!-- Campos personalizados -->
+            <p>
+                <label for="id_nome_empresa">Nome da empresa:</label>
+                {{ form.nome_empresa }}
+                {% if form.nome_empresa.errors %}
+                    <div class="error-messages">
+                        {% for error in form.nome_empresa.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </p>
+            <p>
+                <label for="id_email_corporativo">Email corporativo:</label>
+                {{ form.email_corporativo }}
+                {% if form.email_corporativo.errors %}
+                    <div class="error-messages">
+                        {% for error in form.email_corporativo.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </p>
+            <p>
+                <label for="id_solucao_criptografia">Solução de criptografia utilizada:</label>
+                {{ form.solucao_criptografia }}
+                {% if form.solucao_criptografia.errors %}
+                    <div class="error-messages">
+                        {% for error in form.solucao_criptografia.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </p>
+            <p>
+                <label for="id_telefone">Telefone:</label>
+                {{ form.telefone }}
+                {% if form.telefone.errors %}
+                    <div class="error-messages">
+                        {% for error in form.telefone.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </p>
+
+            <button type="submit">Cadastrar</button>
+        </form>
+
+        <p>Já tem uma conta? <a href="{% url 'home' %}">Faça login</a></p>
+    </div>
+</body>
+</html>
