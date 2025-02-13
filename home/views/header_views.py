@@ -1,97 +1,10 @@
-from OpenSSL import crypto
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from .forms import SignUpForm  # Importe o SignUpForm
-from .models import UserProfile  # Importe o UserProfile
-from OpenSSL import crypto
-from cryptography import x509
+# Mapeamento de campos conforme a tabela SFN
 import struct
 
-def home(request):
-    if request.method == 'POST':
-        # Processar o formulário de login
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect('apps')  # Redireciona para a página Apps após o login
-        else:
-            messages.error(request, 'Usuário ou senha incorretos.')
+from OpenSSL import crypto
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 
-    # Exibir a página inicial com o formulário de login
-    return render(request, 'home/index.html')
-
-@login_required  # Garante que apenas usuários logados acessem esta página
-def apps_view(request):
-    return render(request, 'home/apps.html')
-
-def signup_view(request):
-    if request.method == 'POST':
-        form = SignUpForm(request.POST)
-        if form.is_valid():
-            user = form.save()  # Salva o usuário padrão
-            # Salva os dados adicionais no UserProfile
-            UserProfile.objects.create(
-                user=user,
-                nome_empresa=form.cleaned_data['nome_empresa'],
-                email_corporativo=form.cleaned_data['email_corporativo'],
-                solucao_criptografia=form.cleaned_data['solucao_criptografia'],
-                telefone=form.cleaned_data['telefone']
-            )
-            messages.success(request, 'Cadastro realizado com sucesso!')
-            return redirect('home')  # Redireciona para a página inicial
-    else:
-        form = SignUpForm()
-    return render(request, 'home/signup.html', {'form': form})
-
-@login_required
-def csr_decoder(request):
-    csr_data = None
-    error = None
-
-    if request.method == "POST":
-        csr_text = request.POST.get("csr_text", "").strip()
-
-        if csr_text:
-            try:
-                # Carregar a CSR a partir do texto inserido pelo usuário
-                csr = crypto.load_certificate_request(crypto.FILETYPE_PEM, csr_text.encode())
-
-                subject = csr.get_subject()
-                pub_key = csr.get_pubkey()
-                pub_key_bits = pub_key.bits()
-
-                # Tentar obter o algoritmo de assinatura
-                try:
-                    signature_algorithm = csr.get_signature_algorithm().decode()
-                except AttributeError:
-                    # Se `get_signature_algorithm()` não estiver disponível, extraímos manualmente
-                    csr_cryptography = x509.load_pem_x509_csr(csr_text.encode())
-                    signature_algorithm = csr_cryptography.signature_algorithm_oid._name
-
-                # Criar dicionário com as informações extraídas
-                csr_data = {
-                    "Common Name (CN)": getattr(subject, "CN", "N/A"),
-                    "Organization (O)": getattr(subject, "O", "N/A"),
-                    "Organizational Unit (OU)": getattr(subject, "OU", "N/A"),
-                    "Country (C)": getattr(subject, "C", "N/A"),
-                    "State/Province (ST)": getattr(subject, "ST", "N/A"),
-                    "Locality (L)": getattr(subject, "L", "N/A"),
-                    "Email Address": getattr(subject, "emailAddress", "N/A"),
-                    "Public Key Bits": pub_key_bits,
-                    "Signature Algorithm": signature_algorithm,
-                }
-            except Exception as e:
-                error = f"Erro ao processar a CSR: {str(e)}"
-        else:
-            error = "Por favor, insira uma CSR válida."
-
-    return render(request, "home/csr_decoder.html", {"csr_data": csr_data, "error": error})
-
-# Mapeamento de campos conforme a tabela SFN
 HEADER_FIELDS = [
     ("Tamanho total do Cabeçalho", "H", 2),  # 2 bytes (024CH = 588 decimal)
     ("Versão do Protocolo de Segurança", "B", 1),

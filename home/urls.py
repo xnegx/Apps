@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views import header_views, csr_decoder, certificate_views, home_views
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
