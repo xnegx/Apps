@@ -1,12 +1,13 @@
-# Mapeamento de campos conforme a tabela SFN
+from datetime import datetime
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from OpenSSL import crypto
+from home.models import Certificado
 import struct
 
-from OpenSSL import crypto
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-
+# Mapeamento de campos conforme a tabela SFN
 HEADER_FIELDS = [
-    ("Tamanho total do Cabeçalho", "H", 2),  # 2 bytes (024CH = 588 decimal)
+    ("Tamanho total do Cabeçalho", "H", 2),
     ("Versão do Protocolo de Segurança", "B", 1),
     ("Código de erro", "B", 1),
     ("Indicação de tratamento especial", "B", 1),
@@ -29,8 +30,6 @@ TRANSLATIONS = {
     "Algoritmo de hash": {0x02: "SHA-1", 0x03: "SHA-256"},
     "PC do certificado digital do destino": {0x01: "SPB-Serpro", 0x02: "SPB-Certisign", 0x03: "Pessoas Físicas"},
     "PC do certificado digital da Instituição": {0x01: "SPB-Serpro", 0x02: "SPB-Certisign", 0x03: "Pessoas Físicas"},
-
-    # Mapeamento atualizado para o Código de Erro
     "Código de erro": {
         0x00: "00H - Sem erros, segurança conferida",
         0x01: "01H - EGEN9901 - Tamanho do cabeçalho inválido",
@@ -67,20 +66,15 @@ def parse_binary_header(binary_data):
         value = struct.unpack_from(">" + fmt, binary_data, offset)[0]
         offset += size
 
-        # Tratamento especial para os campos de série (se houver)
         if field_name in ["Série do certificado digital do destino", "Série do certificado digital da Instituição"]:
             if isinstance(value, bytes):
-                value_str = value.decode('utf-8')  # Converte bytes para string
+                value_str = value.decode('utf-8')
             else:
-                value_str = str(value)  # Garante que seja uma string
-            # Remove os zeros à esquerda
+                value_str = str(value)
             value_clean = value_str.lstrip('0')
-            # Se todos os caracteres forem zeros, define como "0"
             value_clean = value_clean if value_clean else "0"
             value = value_clean
 
-
-        # Traduzir o valor se houver uma tradução definida
         translated_value = TRANSLATIONS.get(field_name, {}).get(value, value)
         parsed_data[field_name] = translated_value
 
@@ -92,50 +86,51 @@ def load_certificate(cert_file):
     """
     cert_data = cert_file.read()
 
-    # Verificar se o certificado está no formato PEM
     if b"-----BEGIN CERTIFICATE-----" in cert_data:
         return crypto.load_certificate(crypto.FILETYPE_PEM, cert_data)
     else:
         return crypto.load_certificate(crypto.FILETYPE_ASN1, cert_data)
+
 def compare_certificates(binary_serial, cert_serial):
     """
-    Compara o número de série extraído do binário com o número de série do certificado,
-    convertendo ambos para hexadecimal para comparação consistente.
+    Compara os números de série extraídos do binário e do certificado.
     """
-
-    # Converter número de série binário para hexadecimal
     if isinstance(binary_serial, bytes):
-        binary_serial_hex = binary_serial.hex().lstrip('0').upper()  # Converte bytes para hex, remove zeros à esquerda e torna maiúsculas
+        binary_serial_hex = binary_serial.hex().lstrip('0').upper()
     elif isinstance(binary_serial, str):
         try:
-            # Tentar converter string para int (se for um decimal) e depois para hex
             binary_serial_int = int(binary_serial)
             binary_serial_hex = hex(binary_serial_int)[2:].lstrip('0').upper()
         except ValueError:
-            # Se não for um decimal, assumir que já está em hexadecimal (e limpar)
             binary_serial_hex = binary_serial.lstrip('0').upper()
     else:
         raise TypeError("Tipo de dado 'binary_serial' não suportado.")
 
-    # Converter número de série do certificado para hexadecimal
     if isinstance(cert_serial, int):
-        cert_serial_hex = hex(cert_serial)[2:].lstrip('0').upper()  # Converte int para hex, remove "0x" e torna maiúsculas
+        cert_serial_hex = hex(cert_serial)[2:].lstrip('0').upper()
     elif isinstance(cert_serial, str):
         try:
-            # Tentar converter string para int (se for um decimal) e depois para hex
             cert_serial_int = int(cert_serial)
             cert_serial_hex = hex(cert_serial_int)[2:].lstrip('0').upper()
         except ValueError:
-            # Se não for um decimal, assumir que já está em hexadecimal (e limpar)
             cert_serial_hex = cert_serial.lstrip('0').upper()
     else:
         raise TypeError("Tipo de dado 'cert_serial' não suportado.")
 
-
-    print(f"Binary Serial (Hex): {binary_serial_hex}")
-    print(f"Certificate Serial (Hex): {cert_serial_hex}")
-
     return binary_serial_hex == cert_serial_hex
+
+def get_distinguished_name(cert):
+    """
+    Converte o Distinguished Name em uma string legível.
+    """
+    subject = cert.get_subject()
+    dn_parts = []
+
+    for attribute in subject.get_components():
+        # Converte os componentes do Distinguished Name para um formato legível
+        dn_parts.append(f"{attribute[0].decode('utf-8')}={attribute[1].decode('utf-8')}")
+
+    return ','.join(dn_parts)
 
 @login_required
 def header(request):
@@ -152,11 +147,9 @@ def header(request):
             if not binary_file:
                 raise ValueError("Por favor, envie um arquivo binário.")
 
-            # Ler e processar o arquivo binário
             binary_data = binary_file.read()
             parsed_data = parse_binary_header(binary_data)
 
-            # Comparação com certificados (se enviados)
             if cert_origin and cert_destination:
                 cert_origin_data = load_certificate(cert_origin)
                 cert_destination_data = load_certificate(cert_destination)
@@ -169,13 +162,40 @@ def header(request):
 
                 cert_verification = {
                     "certificado_origem": compare_certificates(binary_cert_origin_serial, cert_origin_serial),
-                    "certificado_destino": compare_certificates(binary_cert_destination_serial,
-                                                                cert_destination_serial),
+                    "certificado_destino": compare_certificates(binary_cert_destination_serial, cert_destination_serial),
                     "emissor_origem": cert_origin_data.get_issuer().commonName,
                     "emissor_destino": cert_destination_data.get_issuer().commonName,
-                    "serie_origem": hex(int(cert_origin_serial))[2:].lstrip('0').upper(),  # Convertendo para hex
-                    "serie_destino": hex(int(cert_destination_serial))[2:].lstrip('0').upper(),  # Convertendo para hex
+                    "serie_origem": hex(int(cert_origin_serial))[2:].lstrip('0').upper(),
+                    "serie_destino": hex(int(cert_destination_serial))[2:].lstrip('0').upper(),
                 }
+
+                # Função para converter o formato de data
+                def convert_cert_date(cert_date):
+                    try:
+                        return datetime.strptime(cert_date.decode("utf-8"), "%Y%m%d%H%M%SZ").date()
+                    except ValueError as e:
+                        raise ValueError(f"Erro ao converter data: {e}")
+
+                # Salvar os certificados no banco de dados com Emitido Para (Distinguished Name completo) e Validade
+                Certificado.objects.create(
+                    arquivo=cert_origin,
+                    nome=cert_origin_data.get_subject().CN,  # Nome (CN) do Certificado
+                    emitido_por=cert_origin_data.get_issuer().commonName,
+                    emitido_para=get_distinguished_name(cert_origin_data),  # Emitido Para (Distinguished Name completo)
+                    validade_inicio=convert_cert_date(cert_origin_data.get_notBefore()),  # Validade Início
+                    validade_fim=convert_cert_date(cert_origin_data.get_notAfter()),  # Validade Fim
+                    numero_serie=cert_origin_serial
+                )
+
+                Certificado.objects.create(
+                    arquivo=cert_destination,
+                    nome=cert_destination_data.get_subject().CN,  # Nome (CN) do Certificado
+                    emitido_por=cert_destination_data.get_issuer().commonName,
+                    emitido_para=get_distinguished_name(cert_destination_data),  # Emitido Para (Distinguished Name completo)
+                    validade_inicio=convert_cert_date(cert_destination_data.get_notBefore()),  # Validade Início
+                    validade_fim=convert_cert_date(cert_destination_data.get_notAfter()),  # Validade Fim
+                    numero_serie=cert_destination_serial
+                )
 
         except Exception as e:
             error = f"Erro ao processar os arquivos: {str(e)}"

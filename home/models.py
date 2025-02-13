@@ -10,3 +10,15 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+class Certificado(models.Model):
+    arquivo = models.FileField(upload_to="certificados")
+    nome = models.CharField(max_length=255)
+    emitido_por = models.CharField(max_length=255, blank=True, null=True)
+    emitido_para = models.CharField(max_length=255, blank=True, null=True)
+    validade_inicio = models.DateField(blank=True, null=True)
+    validade_fim = models.DateField(blank=True, null=True)
+    numero_serie = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.nome} ({self.numero_serie})"

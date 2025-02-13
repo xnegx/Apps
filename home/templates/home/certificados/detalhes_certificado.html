@@ -1,0 +1,15 @@
+{% block content %}
+<h2>Detalhes do Certificado</h2>
+
+<p><strong>Nome:</strong> {{ certificado.nome }}</p>
+<p><strong>Emitido Por:</strong> {{ certificado.emitido_por }}</p>
+<p><strong>Emitido Para:</strong> {{ certificado.emitido_para }}</p>
+<p><strong>Validade Início:</strong> {{ certificado.validade_inicio }}</p>
+<p><strong>Validade Fim:</strong> {{ certificado.validade_fim }}</p>
+<p><strong>Número de Série:</strong> {{ certificado.numero_serie }}</p>
+
+<a href="{% url 'certificados' %}">Voltar para a lista</a>
+<a href="{% url 'download_certificado' certificado.pk %}" class="btn btn-primary">Baixar Certificado</a>
+
+
+{% endblock %}
