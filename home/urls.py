@@ -11,5 +11,6 @@ urlpatterns = [
     path('header/', views.header, name='header'),# Rota para o header
     path("certificados/", views.certificate_views.listar_certificados, name="certificados"), # Rota para lista de certificados
     path("certificados/<int:cert_id>/", views.certificate_views.detalhes_certificado, name="detalhes_certificado"), # Rota para detalhe do certificado
-    path('certificados/<int:pk>/download/', views.download_certificado, name='download_certificado'), # Rota para download do certificado
+    path('certificados/<int:certificado_id>/download/', views.download_certificado, name='download_certificado'), # Rota para download do certificado
+
 ]

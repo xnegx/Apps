@@ -14,6 +14,7 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username
 
+
 class Certificado(models.Model):
     arquivo = models.FileField(upload_to='certificados/')
     nome = models.CharField(max_length=255)
@@ -21,19 +22,17 @@ class Certificado(models.Model):
     emitido_para = models.CharField(max_length=255)
     validade_inicio = models.DateField()
     validade_fim = models.DateField()
-    numero_serie = models.CharField(max_length=255)
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['numero_serie', 'emitido_por'], name='unique_certificado_emitido_por')
-        ]
+    numero_serie = models.CharField(max_length=255, unique=True)  # Mantém como texto, mas em formato HEX
 
     def save(self, *args, **kwargs):
-        """ Impede a duplicação sem gerar erro """
+        """Converte número de série para hexadecimal antes de salvar"""
+        if self.numero_serie.isdigit():  # Se estiver em decimal, converte para hexadecimal
+            self.numero_serie = hex(int(self.numero_serie))[2:].upper()
+
         if not Certificado.objects.filter(numero_serie=self.numero_serie, emitido_por=self.emitido_por).exists():
-            super().save(*args, **kwargs)  # Salva normalmente se não existir
+            super().save(*args, **kwargs)
         else:
-            logger.info(f"O certificado {self.numero_serie} - {self.emitido_por} já existe na base.")  # Usa logging sem ❌
+            logger.info(f"O certificado {self.numero_serie} - {self.emitido_por} já existe na base.")
 
     def __str__(self):
         return f"{self.nome} - {self.numero_serie} - {self.emitido_por}"

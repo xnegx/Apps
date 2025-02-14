@@ -1,4 +1,6 @@
 from datetime import datetime
+
+from django.http import FileResponse
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from OpenSSL import crypto
@@ -132,11 +134,37 @@ def get_distinguished_name(cert):
 
     return ','.join(dn_parts)
 
+
+def convert_cert_date(cert_date):
+    try:
+        return datetime.strptime(cert_date.decode("utf-8"), "%Y%m%d%H%M%SZ").date()
+    except ValueError as e:
+        raise ValueError(f"Erro ao converter data: {e}")
+
+def buscar_certificado(serial):
+    try:
+        # Agora a busca é feita apenas pelo número de série
+        certificado = Certificado.objects.get(numero_serie=serial)
+        print(f"Certificado encontrado: {certificado}")  # Log de depuração
+        return certificado
+    except Certificado.DoesNotExist:
+        print(f"Certificado não encontrado para a série: {serial}")
+        return None
+
+def get_issuer_common_name(cert):
+    """ Obtém o nome comum do emissor de um certificado """
+    return dict(cert.get_issuer().get_components()).get(b'CN', b'').decode('utf-8')
+
+def get_serial_number_hex(cert_serial):
+    """ Converte o número de série do certificado para formato hexadecimal """
+    return hex(int(cert_serial))[2:].lstrip('0').upper()
+
 @login_required
 def header(request):
     parsed_data = None
     cert_verification = None
     error = None
+    certificados_encontrados = {}
 
     if request.method == "POST" and request.FILES:
         try:
@@ -150,33 +178,73 @@ def header(request):
             binary_data = binary_file.read()
             parsed_data = parse_binary_header(binary_data)
 
+            binary_cert_origin_serial = parsed_data["Série do certificado digital da Instituição"]
+            binary_cert_destination_serial = parsed_data["Série do certificado digital do destino"]
+
+            # Verificando se o certificado de origem foi enviado
+            if cert_origin:
+                certificados_encontrados["origem"] = buscar_certificado(binary_cert_origin_serial)
+
+            # Verificando se o certificado de destino foi enviado
+            if cert_destination:
+                certificados_encontrados["destino"] = buscar_certificado(binary_cert_destination_serial)
+
+            # Caso apenas o arquivo binário tenha sido enviado
+            if not cert_origin and not cert_destination:
+                # Buscar certificados de origem e destino com base no arquivo binário
+                certificados_encontrados["origem"] = buscar_certificado(binary_cert_origin_serial)
+                certificados_encontrados["destino"] = buscar_certificado(binary_cert_destination_serial)
+
+            # Se ambos os certificados foram enviados, realizar a comparação
             if cert_origin and cert_destination:
                 cert_origin_data = load_certificate(cert_origin)
                 cert_destination_data = load_certificate(cert_destination)
 
-                cert_origin_serial = str(cert_origin_data.get_serial_number())
-                cert_destination_serial = str(cert_destination_data.get_serial_number())
-
-                binary_cert_origin_serial = parsed_data["Série do certificado digital da Instituição"]
-                binary_cert_destination_serial = parsed_data["Série do certificado digital do destino"]
+                cert_origin_serial = get_serial_number_hex(cert_origin_data.get_serial_number())
+                cert_destination_serial = get_serial_number_hex(cert_destination_data.get_serial_number())
+                cert_origin_emissor = get_issuer_common_name(cert_origin_data)
+                cert_destination_emissor = get_issuer_common_name(cert_destination_data)
 
                 cert_verification = {
                     "certificado_origem": compare_certificates(binary_cert_origin_serial, cert_origin_serial),
-                    "certificado_destino": compare_certificates(binary_cert_destination_serial, cert_destination_serial),
-                    "emissor_origem": cert_origin_data.get_issuer().commonName,
-                    "emissor_destino": cert_destination_data.get_issuer().commonName,
-                    "serie_origem": hex(int(cert_origin_serial))[2:].lstrip('0').upper(),
-                    "serie_destino": hex(int(cert_destination_serial))[2:].lstrip('0').upper(),
+                    "certificado_destino": compare_certificates(binary_cert_destination_serial,
+                                                                cert_destination_serial),
+                    "emissor_origem": cert_origin_emissor,
+                    "emissor_destino": cert_destination_emissor,
+                    "serie_origem": cert_origin_serial,
+                    "serie_destino": cert_destination_serial,
                 }
 
-                # Função para converter o formato de data
-                def convert_cert_date(cert_date):
-                    try:
-                        return datetime.strptime(cert_date.decode("utf-8"), "%Y%m%d%H%M%SZ").date()
-                    except ValueError as e:
-                        raise ValueError(f"Erro ao converter data: {e}")
+            elif cert_origin:  # Caso somente o certificado de origem tenha sido enviado
+                cert_origin_data = load_certificate(cert_origin)
+                cert_origin_serial = get_serial_number_hex(cert_origin_data.get_serial_number())
+                cert_origin_emissor = get_issuer_common_name(cert_origin_data)
 
-                # Salvar os certificados no banco de dados com Emitido Para (Distinguished Name completo) e Validade
+                cert_verification = {
+                    "certificado_origem": True,
+                    "emissor_origem": cert_origin_emissor,
+                    "serie_origem": cert_origin_serial,
+                }
+
+                # Buscar o certificado de destino com base no número de série do binário
+                certificados_encontrados["destino"] = buscar_certificado(binary_cert_destination_serial)
+
+            elif cert_destination:  # Caso somente o certificado de destino tenha sido enviado
+                cert_destination_data = load_certificate(cert_destination)
+                cert_destination_serial = get_serial_number_hex(cert_destination_data.get_serial_number())
+                cert_destination_emissor = get_issuer_common_name(cert_destination_data)
+
+                cert_verification = {
+                    "certificado_destino": True,
+                    "emissor_destino": cert_destination_emissor,
+                    "serie_destino": cert_destination_serial,
+                }
+
+                # Buscar o certificado de origem com base no número de série do binário
+                certificados_encontrados["origem"] = buscar_certificado(binary_cert_origin_serial)
+
+            # Salvar os certificados no banco de dados, caso sejam enviados
+            if cert_origin:
                 Certificado.objects.create(
                     arquivo=cert_origin,
                     nome=cert_origin_data.get_subject().CN,  # Nome (CN) do Certificado
@@ -187,11 +255,12 @@ def header(request):
                     numero_serie=cert_origin_serial
                 )
 
+            if cert_destination:
                 Certificado.objects.create(
                     arquivo=cert_destination,
                     nome=cert_destination_data.get_subject().CN,  # Nome (CN) do Certificado
                     emitido_por=cert_destination_data.get_issuer().commonName,
-                    emitido_para=get_distinguished_name(cert_destination_data),  # Emitido Para (Distinguished Name completo)
+                    emitido_para=get_distinguished_name(cert_destination_data),
                     validade_inicio=convert_cert_date(cert_destination_data.get_notBefore()),  # Validade Início
                     validade_fim=convert_cert_date(cert_destination_data.get_notAfter()),  # Validade Fim
                     numero_serie=cert_destination_serial
@@ -200,4 +269,17 @@ def header(request):
         except Exception as e:
             error = f"Erro ao processar os arquivos: {str(e)}"
 
-    return render(request, "home/header.html", {"parsed_data": parsed_data, "cert_verification": cert_verification, "error": error})
+    return render(
+        request,
+        "home/header.html",
+        {"parsed_data": parsed_data, "cert_verification": cert_verification,
+         "certificados_encontrados": certificados_encontrados, "error": error}
+    )
+
+@login_required
+def download_certificado(request, certificado_id):
+    """
+    Permite o download de um certificado encontrado no banco de dados.
+    """
+    certificado = Certificado.objects.get(id=certificado_id)
+    return FileResponse(certificado.arquivo, as_attachment=True, filename=certificado.nome + ".crt")
