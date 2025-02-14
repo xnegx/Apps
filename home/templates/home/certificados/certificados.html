@@ -1,19 +1,25 @@
 <table>
-    <tr>
-        <th>Nome</th>
-        <th>Emitido Para</th>
-        <th>Validade</th>
-        <th>Ações</th>
-    </tr>
-    {% for certificado in certificados %}
-    <tr>
-        <td>{{ certificado.nome }}</td>
-        <td>{{ certificado.emitido_para }}</td>
-        <td>{{ certificado.validade_fim }}</td>
-        <td>
-            <a href="{% url 'detalhes_certificado' certificado.pk %}">Ver Detalhes</a>
-            <a href="{% url 'download_certificado' certificado.pk %}" class="btn btn-primary">Baixar</a>
-        </td>
-    </tr>
-    {% endfor %}
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Emitido Para</th>
+            <th>Número de Série</th>  <!-- Nova coluna -->
+            <th>Validade</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for certificado in certificados %}
+        <tr>
+            <td>{{ certificado.nome }}</td>
+            <td>{{ certificado.emitido_para }}</td>
+            <td>{{ certificado.numero_serie }}</td>  <!-- Novo campo -->
+            <td>{{ certificado.validade_fim }}</td>
+            <td>
+                <a href="{% url 'detalhes_certificado' certificado.id %}">Ver Detalhes</a>
+                <a href="{% url 'download_certificado' certificado.pk %}" class="btn btn-primary">Baixar</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
