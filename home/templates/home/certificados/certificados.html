@@ -1,33 +1,72 @@
-<table>
-    <thead>
-        <tr>
-            <th>Nome</th>
-            <th>Emitido Para</th>
-            <th>Número de Série</th>
-            <th>Validade</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for certificado in certificados %}
-        <tr>
-            <td>{{ certificado.nome }}</td>
-            <td>{{ certificado.emitido_para }}</td>
-            <td>{{ certificado.numero_serie }}</td>
-            <td>{{ certificado.validade_fim }}</td>
-            <td>
-                <a href="{% url 'detalhes_certificado' certificado.id %}">Ver Detalhes</a>
-                <a href="{% url 'download_certificado' certificado.pk %}" class="btn btn-primary">Baixar</a>
-
-                {% if user.is_staff %}
-                <!-- Botão para apagar certificado -->
-                <form method="POST" action="{% url 'apagar_certificado' certificado.pk %}" style="display:inline;">
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificados</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'home/css/styles.css' %}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">  </head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">  </div> <h1>Certificados</h1>
+            <div class="user-info">
+                <p>Olá, <strong>{{ user.username }}</strong>!</p>
+                <form action="{% url 'logout' %}" method="post">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">Apagar</button>
+                    <button type="submit" class="logout-btn">Sair</button>
                 </form>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+            </div>
+        </div>
+    </header>
+
+    <main class="app-main">
+        <div class="app-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Emitido Para</th>
+                        <th>Número de Série</th>
+                        <th>Validade</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for certificado in certificados %}
+                    <tr>
+                        <td>{{ certificado.nome }}</td>
+                        <td>{{ certificado.emitido_para }}</td>
+                        <td>{{ certificado.numero_serie }}</td>
+                        <td>{{ certificado.validade_fim }}</td>
+                            <td>
+                                <form method="GET" action="{% url 'detalhes_certificado' certificado.id %}" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="material-icons">info</i> Detalhes
+                                    </button>
+                                </form>
+                                <form method="GET" action="{% url 'download_certificado' certificado.pk %}" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="material-icons">file_download</i> Baixar
+                                    </button>
+                                </form>
+                                {% if user.is_staff %}
+                                <form method="POST" action="{% url 'apagar_certificado' certificado.pk %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="material-icons">delete</i> Apagar
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <a href="javascript:history.back()" class="back-button">Voltar</a>
+    </main>
+
+</body>
+</html>

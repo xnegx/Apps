@@ -4,8 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CSR Decoder</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'home/css/styles.css' %}">
 </head>
 <body>
+    <header class="header">
+        <div class="header-container">
+            <h1>CSR Decoder</h1>
+            <div class="user-info">
+                <p>Você está logado como <strong>{{ user.username }}</strong>.</p>
+                <form action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="logout-btn">Logout</button>
+                </form>
+            </div>
+        </div>
+    </header>
     <h1>CSR Decoder</h1>
 
     <form method="POST">
@@ -16,16 +30,21 @@
     </form>
 
     {% if csr_data %}
-        <h2>Informações Decodificadas da CSR</h2>
-        <ul>
-            {% for key, value in csr_data.items %}
-                <li><strong>{{ key }}:</strong> {{ value }}</li>
-            {% endfor %}
-        </ul>
+        <hr>
+        <div class="app-info">
+            <h2>Informações Decodificadas da CSR</h2>
+            <ul>
+                {% for key, value in csr_data.items %}
+                    <li><strong>{{ key }}:</strong> {{ value }}</li>
+                {% endfor %}
+            </ul>
+        </div>
     {% endif %}
 
     {% if error %}
-        <p style="color: red;">{{ error }}</p>
+        <p class="error-message">{{ error }}</p>
     {% endif %}
+
+    <a href="javascript:history.back()" class="back-button">Voltar</a>
 </body>
 </html>

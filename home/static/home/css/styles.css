@@ -1,0 +1,248 @@
+/* Estilos globais */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(135deg, #dfe9f3, #ffffff);
+    padding-top: 100px; /* Garante que o conteúdo não fique por baixo do cabeçalho fixo */
+    min-height: 100vh; /* Garante que a altura da página ocupe 100% da tela */
+    overflow-x: hidden; /* Impede a rolagem horizontal */
+}
+
+/* Estilo do cabeçalho */
+.header {
+    width: 100%;
+    background-color: #ffffff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 10px 20px; /* Menor padding para reduzir a altura */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    min-height: 50px; /* Altura mínima para garantir que o cabeçalho tenha um tamanho razoável */
+}
+
+.header-container {
+    width: 90%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px; /* Limita a largura do conteúdo */
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logout-btn {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.logout-btn:hover {
+    background-color: #e60000;
+}
+
+/* Corpo da página */
+.app-main {
+    text-align: center;
+    width: 80%;
+    margin-top: 20px; /* Ajusta o espaçamento do conteúdo após o cabeçalho */
+}
+
+h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #444;
+}
+
+/* Container de aplicações */
+.app-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* Card de aplicação */
+.app-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Ajuste para uma sombra mais sutil */
+    text-align: center;
+    text-decoration: none;
+    color: #333;
+    transition: transform 0.2s ease-in-out;
+    overflow: hidden; /* Impede que elementos internos saiam do card */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.app-card:hover {
+    transform: scale(1.05);
+}
+
+.app-card h3 {
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.app-card p {
+    font-size: 14px;
+    color: #666;
+}
+
+/* Estilo do botão de voltar */
+.back-button {
+    display: inline-block;
+    background-color: #90a4ae;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 30px; /* Botão mais arredondado */
+    text-decoration: none;
+    margin-top: 30px; /* Maior espaçamento acima do botão */
+    font-size: 16px;
+    font-weight: bold; /* Deixando o texto mais forte */
+    letter-spacing: 1px; /* Um pouco mais de espaçamento entre as letras */
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.back-button:hover {
+    background-color: #607d8b;
+    transform: translateY(-3px); /* Efeito de elevação ao passar o mouse */
+}
+
+.back-button:active {
+    background-color: #455a64; /* Cor ainda mais escura ao clicar */
+    transform: translateY(1px); /* Efeito de pressionamento */
+}
+
+/* Container de login (caso tenha) */
+.login-container {
+    display: flex;
+    width: 800px;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.left-panel {
+    flex: 1;
+    background: linear-gradient(135deg, #b0bec5, #eceff1);
+    color: #37474f;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+}
+
+.right-panel {
+    flex: 1;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+}
+
+.input-group {
+    margin: 15px 0;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #b0bec5;
+    border-radius: 5px;
+    background: #f5f5f5;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background: linear-gradient(135deg, #90a4ae, #cfd8dc);
+    border: none;
+    color: #37474f;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: linear-gradient(135deg, #cfd8dc, #90a4ae);
+}
+
+.options {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.options a {
+    text-decoration: none;
+    color: #607d8b;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Roboto', sans-serif;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+th {
+    background-color: #4c61af;
+    color: white;
+    font-weight: 600;
+}
+
+tr:hover {
+    background-color: #f5f5f5;
+}
+
+@media (max-width: 768px) {
+    table {
+        display: block;
+        overflow-x: auto;
+    }
+}
+
+.btn i.material-icons {
+    font-size: 16px; /* Ajuste o tamanho do ícone */
+    margin-right: 5px; /* Espaçamento entre o ícone e o texto */
+    vertical-align: middle; /* Alinha o ícone verticalmente com o texto */
+}
+
+.btn-danger {
+    background-color: #f44336; /* Vermelho */
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #d32f2f; /* Vermelho mais escuro no hover */
+}

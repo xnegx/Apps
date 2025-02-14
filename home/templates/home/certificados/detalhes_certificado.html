@@ -1,16 +1,54 @@
-{% block content %}
-<h2>Detalhes do Certificado</h2>
+<!DOCTYPE html>
+<html lang="pt-br">
 
-<p><strong>Nome:</strong> {{ certificado.nome }}</p>
-<p><strong>Emitido Por:</strong> {{ certificado.emitido_por }}</p>
-<p><strong>Emitido Para:</strong> {{ certificado.emitido_para }}</p>
-<p><strong>Validade Início:</strong> {{ certificado.validade_inicio }}</p>
-<p><strong>Validade Fim:</strong> {{ certificado.validade_fim }}</p>
-<p><strong>Número de Série:</strong> {{ certificado.numero_serie }}</p>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Certificado</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'home/css/styles.css' %}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
 
-<a href="{% url 'certificados' %}">Voltar para a lista</a>
-<a href="{% url 'download_certificado' certificado.pk %}" class="btn btn-primary">Baixar Certificado</a>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <div class="logo"> </div>
+            <h1>Detalhes do Certificado</h1>
+            <div class="user-info">
+                <p>Olá, <strong>{{ user.username }}</strong>!</p>
+                <form action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="logout-btn">Sair</button>
+                </form>
+            </div>
+        </div>
+    </header>
 
+    <main class="app-main">
+        <div class="details-container">
+            <h2>Detalhes do Certificado</h2>
 
-{% endblock %}
+            <div class="info-group">
+                <p><strong>Nome:</strong> {{ certificado.nome }}</p>
+                <p><strong>Emitido Por:</strong> {{ certificado.emitido_por }}</p>
+                <p><strong>Emitido Para:</strong> {{ certificado.emitido_para }}</p>
+            </div>
 
+            <div class="info-group">
+                <p><strong>Validade Início:</strong> {{ certificado.validade_inicio }}</p>
+                <p><strong>Validade Fim:</strong> {{ certificado.validade_fim }}</p>
+                <p><strong>Número de Série:</strong> {{ certificado.numero_serie }}</p>
+            </div>
+
+            <div class="actions">
+                <a href="{% url 'certificados' %}" class="back-button">Voltar para a lista</a>
+                <a href="{% url 'download_certificado' certificado.pk %}" class="back-button">
+                    <i class="material-icons">file_download</i> Baixar Certificado
+                </a>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

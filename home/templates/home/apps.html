@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Apps</title>
-    <!-- Carregar o arquivo CSS -->
     {% load static %}
     <link rel="stylesheet" href="{% static 'home/css/styles.css' %}">
 </head>
 <body>
-    <header>
+    <header class="header">
         <div class="header-container">
             <h1>Bem-vindo à página Apps!</h1>
             <div class="user-info">
@@ -22,13 +21,28 @@
         </div>
     </header>
 
-    <div class="app-links">
+    <main class="app-main">
         <h2>Escolha uma aplicação:</h2>
-        <ul>
-            <li><a href="{% url 'csr_decoder' %}" class="app-link">CSR DECODER</a></li>
-            <li><a href="{% url 'header' %}" class="app-link">HEADER</a></li>
-            <li><a href="{% url 'certificados' %}" class="app-link">Certificados</a></li>
-        </ul>
-    </div>
+        <div class="app-container">
+            <div class="app-section">
+                <a href="{% url 'csr_decoder' %}" class="app-card">
+                    <h3>CSR DECODER</h3>
+                    <p>Decodifique e visualize detalhes das CSRs.</p>
+                </a>
+            </div>
+            <div class="app-section">
+                <a href="{% url 'header' %}" class="app-card">
+                    <h3>HEADER</h3>
+                    <p>Gerencie e analise os headers enviados.</p>
+                </a>
+            </div>
+            <div class="app-section">
+                <a href="{% url 'certificados' %}" class="app-card">
+                    <h3>Certificados</h3>
+                    <p>Gerencie certificados digitais de forma segura.</p>
+                </a>
+            </div>
+        </div>
+    </main>
 </body>
 </html>
