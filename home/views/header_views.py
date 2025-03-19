@@ -159,7 +159,7 @@ def get_serial_number_hex(cert_serial):
     """ Converte o número de série do certificado para formato hexadecimal """
     return hex(int(cert_serial))[2:].lstrip('0').upper()
 
-@login_required
+
 def header(request):
     parsed_data = None
     cert_verification = None

@@ -6,26 +6,30 @@
     <title>Login</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'home/css/styles.css' %}">
+    <script>
+        function validarEmail() {
+            var email = document.getElementById("email").value;
+            var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!regex.test(email)) {
+                alert("Por favor, insira um e-mail válido.");
+                return false;
+            }
+            return true;
+        }
+    </script>
 </head>
 <body>
     <div class="login-container">
         <div class="left-panel">
             <h1>Bem-vindo ao nosso site!</h1>
-            <p>Por favor, faça login para continuar.</p>
+            <p>Por favor, forneça um email valido para continuar.</p>
         </div>
         <div class="right-panel">
             <h2>Login</h2>
-            <form method="post">
+            <form method="post" onsubmit="return validarEmail()">
                 {% csrf_token %}
                 <div class="input-group">
-                    <input type="text" id="username" name="username" placeholder="Usuário" required>
-                </div>
-                <div class="input-group">
-                    <input type="password" id="password" name="password" placeholder="Senha" required>
-                </div>
-                <div class="options">
-                    <label><input type="checkbox" name="remember"> Lembrar-me</label>
-                    <a href="#">Esqueceu a senha?</a>
+                    <input type="email" id="email" name="email" placeholder="E-mail" required>
                 </div>
                 <button type="submit">Entrar</button>
             </form>
@@ -38,7 +42,6 @@
                     </ul>
                 </div>
             {% endif %}
-            <p>Não tem uma conta? <a href="{% url 'signup' %}">Cadastre-se</a></p>
         </div>
     </div>
 </body>

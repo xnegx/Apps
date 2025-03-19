@@ -3,7 +3,6 @@ from cryptography import x509
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
-@login_required
 def csr_decoder(request):
     csr_data = None
     error = None

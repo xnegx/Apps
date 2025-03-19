@@ -1,25 +1,21 @@
-from django.contrib.auth import authenticate, login
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render
 from home.models import UserProfile
 from home.forms import SignUpForm
+from django.shortcuts import render, redirect
+from django.contrib import messages
+
 def home(request):
     if request.method == 'POST':
-        # Processar o formulário de login
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect('apps')  # Redireciona para a página Apps após o login
+        email = request.POST['email']
+        if email:
+            # Armazenar o e-mail na sessão (caso necessário)
+            request.session['email'] = email
+            return redirect('apps')  # Redireciona para a página Apps
         else:
-            messages.error(request, 'Usuário ou senha incorretos.')
+            messages.error(request, 'Por favor, insira um e-mail válido.')
 
-    # Exibir a página inicial com o formulário de login
     return render(request, 'home/index.html')
 
-@login_required  # Garante que apenas usuários logados acessem esta página
+
 def apps_view(request):
     return render(request, 'home/apps.html')
 
