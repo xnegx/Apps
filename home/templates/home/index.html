@@ -6,15 +6,25 @@
     <title>Login</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'home/css/styles.css' %}">
+    <script src="https://www.google.com/recaptcha/api.js?render=6LcYkvkqAAAAAB32qTzAgyvJ-4Hboq5b0yJXQvSt"></script>
     <script>
-        function validarEmail() {
+        function validarEmail(event) {
+            event.preventDefault(); // Evita o envio do formulário imediato
+
             var email = document.getElementById("email").value;
             var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!regex.test(email)) {
                 alert("Por favor, insira um e-mail válido.");
                 return false;
             }
-            return true;
+
+            grecaptcha.ready(function() {
+                grecaptcha.execute('6LcYkvkqAAAAAB32qTzAgyvJ-4Hboq5b0yJXQvSt', { action: 'login' })
+                .then(function(token) {
+                    document.getElementById("recaptcha-token").value = token;
+                    document.getElementById("login-form").submit(); // Envia o formulário após obter o token
+                });
+            });
         }
     </script>
 </head>
@@ -22,15 +32,16 @@
     <div class="login-container">
         <div class="left-panel">
             <h1>Bem-vindo ao nosso site!</h1>
-            <p>Por favor, forneça um email valido para continuar.</p>
+            <p>Por favor, forneça um email válido para continuar.</p>
         </div>
         <div class="right-panel">
             <h2>Login</h2>
-            <form method="post" onsubmit="return validarEmail()">
+            <form id="login-form" method="post" onsubmit="validarEmail(event)">
                 {% csrf_token %}
                 <div class="input-group">
                     <input type="email" id="email" name="email" placeholder="E-mail" required>
                 </div>
+                <input type="hidden" name="recaptcha-token" id="recaptcha-token">
                 <button type="submit">Entrar</button>
             </form>
             {% if messages %}
