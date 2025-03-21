@@ -95,24 +95,6 @@
                     <li><strong>Série do Certificado de Destino:</strong> {{ cert_verification.serie_destino }}</li>
                 </ul>
             {% endif %}
-
-            {% if certificados_encontrados.origem or certificados_encontrados.destino %}
-                <h2>Certificados Encontrados no Banco de Dados</h2>
-                <ul>
-                    {% if certificados_encontrados.origem %}
-                        <li>
-                            <strong>Certificado de Origem:</strong> {{ certificados_encontrados.origem.nome }}
-                            (<a href="{% url 'download_certificado' certificados_encontrados.origem.id %}" download>📥 Baixar Certificado de Origem</a>)
-                        </li>
-                    {% endif %}
-                    {% if certificados_encontrados.destino %}
-                        <li>
-                            <strong>Certificado de Destino:</strong> {{ certificados_encontrados.destino.nome }}
-                            (<a href="{% url 'download_certificado' certificados_encontrados.destino.id %}" download>📥 Baixar Certificado de Destino</a>)
-                        </li>
-                    {% endif %}
-                </ul>
-            {% endif %}
         </div>
     </div>
 
