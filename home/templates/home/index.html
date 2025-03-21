@@ -12,9 +12,16 @@
             event.preventDefault(); // Evita o envio do formulário imediato
 
             var email = document.getElementById("email").value;
+            var checkbox = document.getElementById("politica");
             var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
             if (!regex.test(email)) {
                 alert("Por favor, insira um e-mail válido.");
+                return false;
+            }
+
+            if (!checkbox.checked) {
+                alert("Você deve concordar com as políticas de dados para continuar.");
                 return false;
             }
 
@@ -25,6 +32,10 @@
                     document.getElementById("login-form").submit(); // Envia o formulário após obter o token
                 });
             });
+        }
+
+        function ativarBotao() {
+            document.getElementById("botao-entrar").disabled = !document.getElementById("politica").checked;
         }
     </script>
 </head>
@@ -41,8 +52,12 @@
                 <div class="input-group">
                     <input type="email" id="email" name="email" placeholder="E-mail" required>
                 </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="politica" onchange="ativarBotao()">
+                    <label for="politica">Li e concordo com as políticas de dados</label>
+                </div>
                 <input type="hidden" name="recaptcha-token" id="recaptcha-token">
-                <button type="submit">Entrar</button>
+                <button type="submit" id="botao-entrar" disabled>Entrar</button>
             </form>
             {% if messages %}
                 <div class="messages">
